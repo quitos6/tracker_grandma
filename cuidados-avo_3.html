@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Os Meus Cuidados</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --azul:#1565C0;--azul-c:#E3F2FD;--azul-e:#BBDEFB;
+  --verde:#2E7D32;--verde-c:#E8F5E9;--verde-e:#C8E6C9;
+  --laranja:#BF360C;--laranja-c:#FBE9E7;--laranja-e:#FFCCBC;
+  --roxo:#6A1B9A;--roxo-c:#F3E5F5;--roxo-e:#E1BEE7;
+  --cinza:#546E7A;--cinza-c:#ECEFF1;
+  --vermelho:#C62828;--vermelho-c:#FFEBEE;
+  --branco:#FFFFFF;--fundo:#EEEEEE;--texto:#1A1A1A;--borda:#BBBBBB;
+  --sombra:0 4px 14px rgba(0,0,0,0.13);
+  --r:16px;--fn:'Arial Black','Arial Bold',Arial,sans-serif
+}
+body{font-family:var(--fn);background:var(--fundo);color:var(--texto);min-height:100vh;overflow-x:hidden}
+
+/* ── ECRÃS ── */
+.ecra{display:none;min-height:100vh;padding:16px;flex-direction:column;gap:14px}
+.ecra.ativo{display:flex}
+
+/* ── CABEÇALHO ── */
+.cabecalho{background:var(--branco);border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--sombra);flex-shrink:0}
+.cabecalho h1{font-size:22px;letter-spacing:1px}
+.cabecalho .data-cab{font-size:16px;color:#555;font-family:Arial,sans-serif;font-weight:bold;text-align:right;line-height:1.3}
+
+/* ── VOLTAR ── */
+.btn-voltar{background:var(--cinza);color:var(--branco);border:none;border-radius:var(--r);padding:14px 24px;font-size:20px;font-family:var(--fn);cursor:pointer;display:flex;align-items:center;gap:8px;align-self:flex-start;box-shadow:var(--sombra);letter-spacing:1px;flex-shrink:0}
+
+/* ── TÍTULO ECRÃ ── */
+.titulo-ecra{font-size:24px;letter-spacing:1px;padding:14px 18px;background:var(--branco);border-radius:var(--r);box-shadow:var(--sombra);display:flex;align-items:center;gap:10px;flex-shrink:0}
+
+/* ── GRADE PRINCIPAL ── */
+.grade-principal{display:grid;grid-template-columns:1fr 1fr;gap:14px;flex:1}
+
+.btn-modulo{border:none;border-radius:var(--r);padding:18px 14px;font-family:var(--fn);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:var(--sombra);transition:transform .1s;text-align:center;min-height:180px;position:relative}
+.btn-modulo:active{transform:scale(0.97)}
+.btn-modulo .icone{font-size:44px;line-height:1}
+.btn-modulo .label{font-size:20px;letter-spacing:.5px;line-height:1.2}
+.btn-modulo .estado{font-size:14px;font-family:Arial,sans-serif;font-weight:bold;padding:5px 10px;border-radius:20px;margin-top:2px}
+
+.modulo-acucar  {background:var(--azul-c);color:var(--azul)}
+.modulo-insulina{background:var(--roxo-c);color:var(--roxo)}
+.modulo-meds    {background:var(--laranja-c);color:var(--laranja)}
+.modulo-afazer  {background:var(--verde-c);color:var(--verde)}
+
+.estado-ok    {background:var(--verde);  color:var(--branco)}
+.estado-alerta{background:var(--vermelho);color:var(--branco)}
+.estado-info  {background:var(--azul);  color:var(--branco)}
+.estado-vazio {background:#999;         color:var(--branco)}
+.estado-roxo  {background:var(--roxo);  color:var(--branco)}
+
+/* ── A FAZER — botão principal ── */
+.afazer-topo{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%}
+.afazer-topo .icone{font-size:44px;line-height:1}
+.afazer-topo .label{font-size:20px;letter-spacing:.5px}
+.afazer-topo .badge{background:var(--verde);color:var(--branco);font-size:14px;font-family:Arial,sans-serif;font-weight:bold;padding:4px 10px;border-radius:20px}
+
+.afazer-lista-preview{width:100%;display:flex;flex-direction:column;gap:5px;margin-top:4px}
+.afazer-item-preview{background:var(--verde-e);border-radius:8px;padding:6px 8px;display:flex;align-items:center;gap:6px;border-left:4px solid var(--verde);width:100%}
+.afazer-item-preview .data-prev{font-size:12px;color:var(--verde);font-family:'Arial Black',Arial,sans-serif;font-weight:900;white-space:nowrap;flex-shrink:0}
+.afazer-item-preview .desc-prev{font-size:12px;color:#1B5E20;font-family:Arial,sans-serif;font-weight:bold;flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.afazer-vazio{font-size:13px;color:var(--verde);font-family:Arial,sans-serif;padding:4px 0;opacity:.7}
+
+/* ── AÇÚCAR ── */
+.teclado-acucar{background:var(--branco);border-radius:var(--r);padding:20px;box-shadow:var(--sombra);flex:1;display:flex;flex-direction:column;gap:14px}
+.display-acucar{background:var(--azul-c);border:3px solid var(--azul);border-radius:var(--r);padding:20px;text-align:center;font-size:64px;color:var(--azul);letter-spacing:4px;min-height:110px;display:flex;align-items:center;justify-content:center}
+.display-acucar.alerta{background:var(--vermelho-c);border-color:var(--vermelho);color:var(--vermelho)}
+.grade-teclado{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tecla{background:var(--fundo);border:2px solid var(--borda);border-radius:12px;font-size:30px;font-family:var(--fn);padding:18px;cursor:pointer;color:var(--texto)}
+.tecla:active{background:var(--borda)}
+.tecla.apagar{background:var(--laranja-c);border-color:var(--laranja);color:var(--laranja);font-size:20px}
+.btn-ok-acucar{background:var(--azul);color:var(--branco);border:none;border-radius:var(--r);font-size:28px;font-family:var(--fn);padding:22px;cursor:pointer;letter-spacing:2px;box-shadow:var(--sombra)}
+.btn-ver-regs{background:none;border:2px solid var(--azul);color:var(--azul);border-radius:var(--r);font-size:15px;font-family:Arial,sans-serif;padding:10px;cursor:pointer;text-align:center}
+
+/* ── INSULINA ── */
+.area-insulina{background:var(--branco);border-radius:var(--r);padding:28px;box-shadow:var(--sombra);flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;text-align:center}
+.estado-ins-grande{font-size:20px;padding:16px 28px;border-radius:var(--r);font-family:Arial,sans-serif;border:3px solid}
+.btn-tomei-ins{background:var(--roxo);color:var(--branco);border:none;border-radius:var(--r);font-size:30px;font-family:var(--fn);padding:32px 48px;cursor:pointer;letter-spacing:2px;box-shadow:var(--sombra);width:100%;max-width:460px}
+.btn-tomei-ins.ja{background:#AAAAAA;cursor:default}
+.btn-ver-hist-ins{background:none;border:2px solid var(--roxo);color:var(--roxo);border-radius:var(--r);font-size:15px;font-family:Arial,sans-serif;padding:10px 20px;cursor:pointer;align-self:flex-end}
+
+/* ── MEDICAMENTOS ── */
+.lista-meds{display:flex;flex-direction:column;gap:14px;flex:1}
+.card-med{background:var(--branco);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sombra);display:flex;align-items:center;gap:16px;border-left:8px solid var(--laranja)}
+.foto-med{width:76px;height:76px;border-radius:12px;background:var(--laranja-c);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;color:var(--laranja);overflow:hidden}
+.foto-med img{width:100%;height:100%;object-fit:cover;border-radius:12px}
+.info-med{flex:1;min-width:0}
+.info-med .nome{font-size:22px;color:var(--laranja);margin-bottom:4px}
+.info-med .detalhe{font-size:16px;color:#555;font-family:Arial,sans-serif;font-weight:bold}
+.area-tomas{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.btn-tomei-med{border:none;border-radius:10px;font-size:14px;font-family:var(--fn);padding:10px 14px;cursor:pointer;letter-spacing:.5px;white-space:nowrap}
+.btn-tomei-med.pendente{background:var(--laranja);color:var(--branco)}
+.btn-tomei-med.feito{background:var(--verde);color:var(--branco)}
+.btn-tomei-med.completo{background:#BBBBBB;color:var(--branco);cursor:default}
+.sem-meds{text-align:center;padding:36px;font-size:18px;color:#888;font-family:Arial,sans-serif;background:var(--branco);border-radius:var(--r);box-shadow:var(--sombra)}
+
+/* ── BOTÃO PEQUENO FAMÍLIA (canto sup. direito) ── */
+.btn-familia{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.12);color:inherit;border:none;border-radius:8px;font-size:11px;font-family:Arial,sans-serif;font-weight:bold;padding:5px 8px;cursor:pointer;letter-spacing:.5px;opacity:.6}
+.btn-familia:active{opacity:1}
+.btn-familia-fixo{background:rgba(0,0,0,.1);color:var(--cinza);border:1px solid var(--borda);border-radius:10px;font-size:13px;font-family:Arial,sans-serif;font-weight:bold;padding:7px 12px;cursor:pointer;letter-spacing:.3px;align-self:flex-end}
+
+/* ── OVERLAY GERAL ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;padding:16px;overflow-y:auto;align-items:flex-start;justify-content:center}
+.overlay.ativo{display:flex}
+.painel{background:var(--branco);border-radius:var(--r);padding:24px;width:100%;max-width:560px;margin:auto;display:flex;flex-direction:column;gap:14px}
+.painel h2{font-size:22px;letter-spacing:.5px}
+.painel label{font-size:14px;color:#555;font-family:Arial,sans-serif;font-weight:bold;display:block;margin-bottom:4px}
+.painel input,.painel select,.painel textarea{border:2px solid var(--borda);border-radius:10px;padding:12px 14px;font-size:18px;font-family:Arial,sans-serif;color:var(--texto);width:100%}
+.painel input:focus,.painel select:focus,.painel textarea:focus{outline:none;border-color:var(--azul)}
+.painel textarea{min-height:80px;resize:vertical}
+.btn-painel-ok{background:var(--azul);color:var(--branco);border:none;border-radius:var(--r);font-size:18px;font-family:var(--fn);padding:14px;cursor:pointer;width:100%;letter-spacing:1px}
+.btn-painel-fechar{background:var(--cinza);color:var(--branco);border:none;border-radius:var(--r);font-size:18px;font-family:var(--fn);padding:14px;cursor:pointer;width:100%;letter-spacing:1px}
+.btn-remover{background:var(--vermelho);color:var(--branco);border:none;border-radius:8px;padding:8px 14px;font-size:14px;font-family:var(--fn);cursor:pointer}
+.item-lista-gerir{background:var(--fundo);border-radius:10px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.item-lista-gerir .nome-g{font-size:16px;font-family:Arial,sans-serif;font-weight:bold;flex:1}
+.item-lista-gerir .sub-g{font-size:13px;color:#777;font-family:Arial,sans-serif}
+
+/* ── UPLOAD FOTO ── */
+.upload-area{border:3px dashed var(--laranja);border-radius:12px;padding:16px;text-align:center;cursor:pointer;color:var(--laranja);font-size:14px;font-family:Arial,sans-serif;background:var(--laranja-c)}
+.upload-area img{max-height:80px;border-radius:8px;margin-top:8px}
+
+/* ── REGISTOS / HISTÓRICO ── */
+.lista-registos{display:flex;flex-direction:column;gap:10px;flex:1}
+.reg-item{background:var(--branco);border-radius:var(--r);padding:16px 20px;box-shadow:var(--sombra);display:flex;align-items:center;justify-content:space-between;border-left:8px solid var(--azul)}
+.reg-item.alerta{border-left-color:var(--vermelho)}
+.reg-item.esqueceu{border-left-color:var(--vermelho);background:var(--vermelho-c)}
+.reg-item.tomou{border-left-color:var(--roxo)}
+.reg-item .val{font-size:28px;color:var(--azul)}
+.reg-item.alerta .val{color:var(--vermelho)}
+.reg-item.tomou .val{font-size:20px;color:var(--roxo)}
+.reg-item.esqueceu .val{font-size:20px;color:var(--vermelho)}
+.reg-item .dt{font-size:14px;color:#888;font-family:Arial,sans-serif;margin-top:2px}
+.badge-alerta{background:var(--vermelho);color:var(--branco);padding:3px 10px;border-radius:20px;font-size:13px;font-family:Arial,sans-serif}
+.sem-regs{text-align:center;padding:36px;font-size:18px;color:#888;font-family:Arial,sans-serif;background:var(--branco);border-radius:var(--r)}
+
+/* ── A FAZER ECRÃ ── */
+.lista-afazer{display:flex;flex-direction:column;gap:12px;flex:1}
+.card-tarefa{background:var(--branco);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sombra);border-left:8px solid var(--verde);display:flex;align-items:center;gap:14px}
+.card-tarefa.concluida{opacity:.45;border-left-color:#AAA;background:#F9F9F9}
+.tarefa-info{flex:1}
+.tarefa-data{font-size:20px;color:var(--verde);margin-bottom:4px}
+.tarefa-data.passada{color:var(--vermelho)}
+.tarefa-hora{font-size:16px;color:#444;font-family:Arial,sans-serif;font-weight:bold;margin-bottom:4px}
+.tarefa-desc{font-size:18px;color:var(--texto);font-family:Arial,sans-serif;font-weight:bold}
+.btn-feita{background:var(--verde);color:var(--branco);border:none;border-radius:10px;font-size:16px;font-family:var(--fn);padding:12px 16px;cursor:pointer;flex-shrink:0}
+.btn-feita.ja{background:#AAA;cursor:default}
+.btn-feita-desfazer{background:#888;color:var(--branco);border:none;border-radius:10px;font-size:13px;font-family:Arial,sans-serif;padding:8px 12px;cursor:pointer;flex-shrink:0}
+
+/* ── CONFIRMAÇÃO ── */
+.overlay-confirm{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:center;justify-content:center;padding:20px}
+.overlay-confirm.ativo{display:flex}
+.painel-confirm{background:var(--branco);border-radius:var(--r);padding:36px 28px;text-align:center;max-width:340px;width:100%}
+.painel-confirm .icone-c{font-size:64px;margin-bottom:12px}
+.painel-confirm p{font-size:20px;font-family:Arial,sans-serif;font-weight:bold}
+
+@media(max-width:480px){
+  .grade-principal{grid-template-columns:1fr}
+  .modulo-afazer{grid-column:1}
+  .display-acucar{font-size:50px}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════
+     ECRÃ PRINCIPAL
+════════════════════════════════════ -->
+<div id="ecra-principal" class="ecra ativo">
+  <div class="cabecalho">
+    <h1>OS MEUS CUIDADOS</h1>
+    <div class="data-cab" id="data-cab"></div>
+  </div>
+
+  <div class="grade-principal">
+
+    <!-- AÇÚCAR -->
+    <button class="btn-modulo modulo-acucar" onclick="ir('ecra-acucar')">
+      <span class="icone">🩸</span>
+      <span class="label">MEDIÇÃO<br>AÇÚCAR</span>
+      <span class="estado" id="est-acucar">SEM REGISTO</span>
+    </button>
+
+    <!-- INSULINA -->
+    <button class="btn-modulo modulo-insulina" onclick="ir('ecra-insulina')">
+      <span class="icone">💉</span>
+      <span class="label">INSULINA</span>
+      <span class="estado" id="est-insulina">NÃO TOMOU</span>
+    </button>
+
+    <!-- MEDICAMENTOS -->
+    <button class="btn-modulo modulo-meds" onclick="ir('ecra-meds')">
+      <span class="icone">💊</span>
+      <span class="label" style="font-size:17px">MEDICAMENTOS</span>
+      <span class="estado" id="est-meds">VER LISTA</span>
+    </button>
+
+    <!-- A FAZER -->
+    <button class="btn-modulo modulo-afazer" onclick="ir('ecra-afazer')" id="btn-afazer">
+      <div class="afazer-topo">
+        <span class="icone">📋</span>
+        <span class="label">A FAZER</span>
+        <span class="badge" id="badge-afazer">0</span>
+      </div>
+      <div class="afazer-lista-preview" id="preview-afazer"></div>
+    </button>
+
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     ECRÃ AÇÚCAR
+════════════════════════════════════ -->
+<div id="ecra-acucar" class="ecra">
+  <button class="btn-voltar" onclick="ir('ecra-principal')">← VOLTAR</button>
+  <div class="titulo-ecra">🩸 MEDIÇÃO DO AÇÚCAR</div>
+  <div class="teclado-acucar">
+    <div class="display-acucar" id="disp-acucar">— — —</div>
+    <div class="grade-teclado">
+      <button class="tecla" onclick="tA('7')">7</button>
+      <button class="tecla" onclick="tA('8')">8</button>
+      <button class="tecla" onclick="tA('9')">9</button>
+      <button class="tecla" onclick="tA('4')">4</button>
+      <button class="tecla" onclick="tA('5')">5</button>
+      <button class="tecla" onclick="tA('6')">6</button>
+      <button class="tecla" onclick="tA('1')">1</button>
+      <button class="tecla" onclick="tA('2')">2</button>
+      <button class="tecla" onclick="tA('3')">3</button>
+      <button class="tecla apagar" onclick="apagarA()">⌫</button>
+      <button class="tecla" onclick="tA('0')">0</button>
+      <button class="tecla" style="background:var(--azul-e);border-color:var(--azul);color:var(--azul)" onclick="tA('.')">.</button>
+    </div>
+    <button class="btn-ok-acucar" onclick="guardarAcucar()">✓ GUARDAR</button>
+    <button class="btn-ver-regs" onclick="ir('ecra-regs-acucar')">Ver registos anteriores</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     ECRÃ REGISTOS AÇÚCAR
+════════════════════════════════════ -->
+<div id="ecra-regs-acucar" class="ecra">
+  <button class="btn-voltar" onclick="ir('ecra-acucar')">← VOLTAR</button>
+  <div class="titulo-ecra">🩸 REGISTOS DO AÇÚCAR</div>
+  <div class="lista-registos" id="lista-regs-acucar"></div>
+</div>
+
+<!-- ════════════════════════════════════
+     ECRÃ INSULINA
+════════════════════════════════════ -->
+<div id="ecra-insulina" class="ecra">
+  <button class="btn-voltar" onclick="ir('ecra-principal')">← VOLTAR</button>
+  <div class="titulo-ecra">💉 INSULINA</div>
+  <div class="area-insulina">
+    <div class="estado-ins-grande" id="est-ins-grande"></div>
+    <button class="btn-tomei-ins" id="btn-ins" onclick="tomarInsulina()">✓ TOMEI A INSULINA</button>
+    <p style="font-size:15px;color:#888;font-family:Arial,sans-serif">Carregue aqui quando tomar a injeção</p>
+    <button class="btn-ver-hist-ins" onclick="ir('ecra-hist-insulina')">Ver histórico →</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     ECRÃ HISTÓRICO INSULINA
+════════════════════════════════════ -->
+<div id="ecra-hist-insulina" class="ecra">
+  <button class="btn-voltar" onclick="ir('ecra-insulina')">← VOLTAR</button>
+  <div class="titulo-ecra">💉 HISTÓRICO DE INSULINA</div>
+  <div class="lista-registos" id="lista-hist-ins"></div>
+</div>
+
+<!-- ════════════════════════════════════
+     ECRÃ MEDICAMENTOS
+════════════════════════════════════ -->
+<div id="ecra-meds" class="ecra">
+  <button class="btn-voltar" onclick="ir('ecra-principal')">← VOLTAR</button>
+  <div class="titulo-ecra" style="position:relative">
+    💊 MEDICAMENTOS
+    <button class="btn-familia" onclick="abrirGerirMeds()">⚙ GERIR</button>
+  </div>
+  <div class="lista-meds" id="lista-meds-vis"></div>
+</div>
+
+<!-- ════════════════════════════════════
+     ECRÃ A FAZER
+════════════════════════════════════ -->
+<div id="ecra-afazer" class="ecra">
+  <button class="btn-voltar" onclick="ir('ecra-principal')">← VOLTAR</button>
+  <div class="titulo-ecra" style="position:relative">
+    📋 A FAZER
+    <button class="btn-familia" onclick="abrirAddTarefa()">+ ADICIONAR</button>
+  </div>
+  <div class="lista-afazer" id="lista-afazer"></div>
+</div>
+
+<!-- ════════════════════════════════════
+     OVERLAY — GERIR MEDICAMENTOS
+════════════════════════════════════ -->
+<div class="overlay" id="ov-meds">
+  <div class="painel">
+    <h2 style="color:var(--laranja)">⚙ GERIR MEDICAMENTOS</h2>
+    <div>
+      <label>NOME</label>
+      <input type="text" id="med-nome" placeholder="Ex: Metformina" autocomplete="off">
+    </div>
+    <div>
+      <label>DOSE</label>
+      <input type="text" id="med-dose" placeholder="Ex: 500 mg" autocomplete="off">
+    </div>
+    <div>
+      <label>VEZES POR DIA</label>
+      <select id="med-freq">
+        <option value="1">1 vez por dia</option>
+        <option value="2">2 vezes por dia</option>
+        <option value="3">3 vezes por dia</option>
+        <option value="0">Conforme necessário</option>
+      </select>
+    </div>
+    <div>
+      <label>FOTOGRAFIA (opcional)</label>
+      <div class="upload-area" onclick="document.getElementById('med-foto-inp').click()">
+        <div id="prev-foto-txt">📷 CARREGAR FOTO</div>
+        <img id="prev-foto-img" style="display:none">
+        <input type="file" id="med-foto-inp" accept="image/*" style="display:none" onchange="prevFoto(this)">
+      </div>
+    </div>
+    <button class="btn-painel-ok" style="background:var(--laranja)" onclick="adicionarMed()">+ ADICIONAR MEDICAMENTO</button>
+    <hr style="border-color:var(--borda)">
+    <div style="font-size:14px;color:#888;font-family:Arial,sans-serif;font-weight:bold">MEDICAMENTOS ACTUAIS</div>
+    <div id="lista-meds-gerir" style="display:flex;flex-direction:column;gap:8px"></div>
+    <button class="btn-painel-fechar" onclick="fecharOv('ov-meds');renderMeds()">✓ FECHAR</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     OVERLAY — ADICIONAR TAREFA
+════════════════════════════════════ -->
+<div class="overlay" id="ov-tarefa">
+  <div class="painel">
+    <h2 style="color:var(--verde)">+ NOVA TAREFA</h2>
+    <div>
+      <label>DESCRIÇÃO</label>
+      <textarea id="tar-desc" placeholder="Ex: Consulta Dr. Silva — Cardiologia"></textarea>
+    </div>
+    <div>
+      <label>DATA</label>
+      <input type="date" id="tar-data">
+    </div>
+    <div>
+      <label>HORA</label>
+      <input type="time" id="tar-hora">
+    </div>
+    <button class="btn-painel-ok" style="background:var(--verde)" onclick="adicionarTarefa()">+ ADICIONAR TAREFA</button>
+    <button class="btn-painel-fechar" onclick="fecharOv('ov-tarefa')">CANCELAR</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════
+     OVERLAY CONFIRMAÇÃO
+════════════════════════════════════ -->
+<div class="overlay-confirm" id="ov-confirm">
+  <div class="painel-confirm">
+    <div class="icone-c" id="conf-icone">✅</div>
+    <p id="conf-texto">Guardado!</p>
+  </div>
+</div>
+
+<script>
+// ── UTILITÁRIOS ──────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const ls  = k => { try { return JSON.parse(localStorage.getItem(k)) } catch { return null } };
+const lsW = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+function hoje() {
+  return new Date().toLocaleDateString('pt-PT');
+}
+function agora() {
+  return new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
+}
+function ir(id) {
+  document.querySelectorAll('.ecra').forEach(e => e.classList.remove('ativo'));
+  $(id).classList.add('ativo');
+  window.scrollTo(0,0);
+  if (id==='ecra-principal')      atualizarPrincipal();
+  if (id==='ecra-insulina')       atualizarInsulina();
+  if (id==='ecra-meds')           renderMeds();
+  if (id==='ecra-afazer')         renderAfazer();
+  if (id==='ecra-regs-acucar')    renderRegsAcucar();
+  if (id==='ecra-hist-insulina')  renderHistIns();
+}
+function abrirOv(id)  { $(id).classList.add('ativo') }
+function fecharOv(id) { $(id).classList.remove('ativo') }
+function confirmar(icone, txt, ms=1700) {
+  $('conf-icone').textContent = icone;
+  $('conf-texto').textContent = txt;
+  $('ov-confirm').classList.add('ativo');
+  setTimeout(() => $('ov-confirm').classList.remove('ativo'), ms);
+}
+
+// ── CABEÇALHO ────────────────────────────────────────────
+(function(){
+  const d=new Date();
+  const dias=['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+  $('data-cab').innerHTML = dias[d.getDay()]+'<br>'+d.toLocaleDateString('pt-PT');
+})();
+
+// ── AÇÚCAR ───────────────────────────────────────────────
+const LIM={min:70,max:180};
+let valA='';
+
+function tA(v) {
+  if(valA.length>=5) return;
+  if(v==='.' && (valA.includes('.')||valA==='')) return;
+  valA+=v; dispA();
+}
+function apagarA() { valA=valA.slice(0,-1); dispA(); }
+function dispA() {
+  const el=$('disp-acucar'), n=parseFloat(valA);
+  el.textContent = valA ? valA+' mg/dL' : '— — —';
+  el.classList.toggle('alerta', !!valA && !isNaN(n) && (n<LIM.min||n>LIM.max));
+}
+function guardarAcucar() {
+  const n=parseFloat(valA);
+  if(!valA||isNaN(n)) { alert('INTRODUZA UM VALOR PRIMEIRO'); return; }
+  const regs=ls('acucar_regs')||[];
+  regs.unshift({v:n,d:hoje(),h:agora()});
+  if(regs.length>120) regs.pop();
+  lsW('acucar_regs',regs);
+  lsW('acucar_hoje',{v:n,d:hoje()});
+  valA=''; dispA();
+  const fora=n<LIM.min||n>LIM.max;
+  confirmar(fora?'⚠️':'✅', fora?'VALOR FORA DO NORMAL!':'AÇÚCAR REGISTADO!');
+  setTimeout(()=>ir('ecra-principal'),1700);
+}
+function renderRegsAcucar() {
+  const regs=ls('acucar_regs')||[];
+  $('lista-regs-acucar').innerHTML = regs.length ? regs.map(r=>{
+    const fora=r.v<LIM.min||r.v>LIM.max;
+    return `<div class="reg-item${fora?' alerta':''}">
+      <div><div class="val">${r.v} <span style="font-size:16px">mg/dL</span></div>
+      <div class="dt">${r.d} às ${r.h}</div></div>
+      ${fora?'<span class="badge-alerta">FORA DO NORMAL</span>':''}
+    </div>`;
+  }).join('') : '<div class="sem-regs">Ainda não há registos.</div>';
+}
+
+// ── INSULINA ─────────────────────────────────────────────
+function atualizarInsulina() {
+  const reg=ls('insulina_hoje');
+  const jaHoje=reg&&reg.d===hoje();
+  const btn=$('btn-ins'), est=$('est-ins-grande');
+  if(jaHoje){
+    btn.textContent='✓ JÁ TOMOU HOJE'; btn.classList.add('ja'); btn.onclick=null;
+    est.textContent='Tomou às '+reg.h;
+    est.style.cssText='background:var(--verde-c);color:var(--verde);border-color:var(--verde)';
+  } else {
+    btn.textContent='✓ TOMEI A INSULINA'; btn.classList.remove('ja'); btn.onclick=tomarInsulina;
+    est.textContent='Ainda não registado hoje';
+    est.style.cssText='background:var(--vermelho-c);color:var(--vermelho);border-color:var(--vermelho)';
+  }
+}
+function tomarInsulina() {
+  const h=agora();
+  lsW('insulina_hoje',{d:hoje(),h});
+  // guardar no histórico geral
+  const hist=ls('insulina_hist')||[];
+  // evitar duplicado do mesmo dia
+  if(!hist.find(r=>r.d===hoje())) hist.unshift({d:hoje(),h,tomou:true});
+  lsW('insulina_hist',hist);
+  confirmar('💉','INSULINA REGISTADA!');
+  atualizarInsulina();
+  setTimeout(()=>ir('ecra-principal'),1700);
+}
+function renderHistIns() {
+  // Gera os últimos 30 dias e verifica quais têm registo
+  const hist=ls('insulina_hist')||[];
+  const linhas=[];
+  for(let i=0;i<30;i++){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const ds=d.toLocaleDateString('pt-PT');
+    const reg=hist.find(r=>r.d===ds);
+    linhas.push({ds, reg});
+  }
+  $('lista-hist-ins').innerHTML = linhas.map(({ds,reg})=>{
+    if(reg) return `<div class="reg-item tomou">
+      <div><div class="val">✓ TOMOU</div><div class="dt">${ds} às ${reg.h}</div></div>
+    </div>`;
+    const hoje_=new Date().toLocaleDateString('pt-PT');
+    if(ds===hoje_) return ''; // hoje ainda pode tomar
+    return `<div class="reg-item esqueceu">
+      <div><div class="val">✗ NÃO TOMOU</div><div class="dt">${ds}</div></div>
+      <span class="badge-alerta">ESQUECEU</span>
+    </div>`;
+  }).filter(Boolean).join('') || '<div class="sem-regs">Sem histórico ainda.</div>';
+}
+
+// ── MEDICAMENTOS ─────────────────────────────────────────
+let fotoB64=null;
+function prevFoto(inp) {
+  const f=inp.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=e=>{
+    fotoB64=e.target.result;
+    $('prev-foto-img').src=fotoB64;
+    $('prev-foto-img').style.display='block';
+    $('prev-foto-txt').style.display='none';
+  };
+  r.readAsDataURL(f);
+}
+function adicionarMed() {
+  const nome=$('med-nome').value.trim().toUpperCase();
+  const dose=$('med-dose').value.trim().toUpperCase();
+  const freq=parseInt($('med-freq').value);
+  if(!nome){alert('INTRODUZA O NOME');return;}
+  const meds=ls('medicamentos')||[];
+  meds.push({id:Date.now(),nome,dose,freq,foto:fotoB64});
+  lsW('medicamentos',meds);
+  $('med-nome').value='';$('med-dose').value='';$('med-freq').selectedIndex=0;
+  $('prev-foto-img').style.display='none';$('prev-foto-txt').style.display='block';
+  $('med-foto-inp').value='';fotoB64=null;
+  renderMedsGerir();
+  confirmar('💊','MEDICAMENTO ADICIONADO!',1200);
+}
+function removerMed(id) {
+  if(!confirm('REMOVER ESTE MEDICAMENTO?')) return;
+  lsW('medicamentos',(ls('medicamentos')||[]).filter(m=>m.id!==id));
+  renderMedsGerir(); renderMeds();
+}
+function tomarMed(id,toma) {
+  // toma = 1 ou 2
+  const chave='meds_tomas_'+hoje();
+  const tomas=ls(chave)||{};
+  if(!tomas[id]) tomas[id]=[];
+  if(!tomas[id].includes(toma)) tomas[id].push(toma);
+  lsW(chave,tomas);
+  renderMeds();
+  confirmar('✅','MEDICAMENTO TOMADO!',1200);
+}
+function renderMeds() {
+  const meds=ls('medicamentos')||[];
+  const chave='meds_tomas_'+hoje();
+  const tomas=ls(chave)||{};
+  if(!meds.length){
+    $('lista-meds-vis').innerHTML='<div class="sem-meds">Sem medicamentos adicionados.<br>Use o botão ⚙ GERIR para adicionar.</div>';
+    return;
+  }
+  $('lista-meds-vis').innerHTML=meds.map(m=>{
+    const t=tomas[m.id]||[];
+    const freq=m.freq||1;
+    let btns='';
+    if(freq===0){
+      // conforme necessário
+      btns=`<button class="btn-tomei-med ${t.length?'feito':'pendente'}" onclick="tomarMed(${m.id},1)">
+        ${t.length?'✓ TOMEI':'TOMEI'}
+      </button>`;
+    } else {
+      for(let i=1;i<=freq;i++){
+        const done=t.includes(i);
+        const allDone=t.length>=freq;
+        btns+=`<button class="btn-tomei-med ${done?'feito':allDone?'completo':'pendente'}"
+          onclick="${done||allDone?'':('tomarMed('+m.id+','+i+')')}">
+          ${done?'✓ '+(freq>1?i+'ª VEZ':'TOMEI'):(freq>1?(i+'ª VEZ'):'TOMEI')}
+        </button>`;
+      }
+    }
+    const completo=freq>0&&(tomas[m.id]||[]).length>=freq;
+    return `<div class="card-med" style="${completo?'border-left-color:var(--verde)':''}">
+      <div class="foto-med">${m.foto?`<img src="${m.foto}" alt="${m.nome}">`:'💊'}</div>
+      <div class="info-med">
+        <div class="nome">${m.nome}</div>
+        <div class="detalhe">${m.dose?m.dose+' · ':''}${freq===0?'Conforme necessário':freq+'x por dia'}</div>
+        ${completo?'<div style="color:var(--verde);font-size:13px;font-family:Arial,sans-serif;font-weight:bold;margin-top:4px">✓ COMPLETO</div>':''}
+      </div>
+      <div class="area-tomas">${btns}</div>
+    </div>`;
+  }).join('');
+}
+function renderMedsGerir() {
+  const meds=ls('medicamentos')||[];
+  $('lista-meds-gerir').innerHTML=meds.length ? meds.map(m=>`
+    <div class="item-lista-gerir">
+      <div><div class="nome-g" style="color:var(--laranja)">${m.nome}</div>
+      <div class="sub-g">${m.dose?m.dose+' · ':''}${m.freq===0?'Conf. necessário':m.freq+'x/dia'}</div></div>
+      <button class="btn-remover" onclick="removerMed(${m.id})">REMOVER</button>
+    </div>`).join('')
+  : '<p style="color:#aaa;font-family:Arial,sans-serif;font-size:14px;text-align:center">Nenhum medicamento.</p>';
+}
+function abrirGerirMeds() { renderMedsGerir(); abrirOv('ov-meds'); }
+
+// ── A FAZER ──────────────────────────────────────────────
+function adicionarTarefa() {
+  const desc=$('tar-desc').value.trim();
+  const data=$('tar-data').value;
+  const hora=$('tar-hora').value;
+  if(!desc){alert('INTRODUZA UMA DESCRIÇÃO');return;}
+  const tarefas=ls('tarefas')||[];
+  tarefas.push({id:Date.now(),desc,data,hora,feita:false});
+  // ordenar por data+hora
+  tarefas.sort((a,b)=>{
+    const da=(a.data||'9999')+(a.hora||'99:99');
+    const db=(b.data||'9999')+(b.hora||'99:99');
+    return da<db?-1:1;
+  });
+  lsW('tarefas',tarefas);
+  $('tar-desc').value='';$('tar-data').value='';$('tar-hora').value='';
+  fecharOv('ov-tarefa');
+  renderAfazer();
+  atualizarPrincipal();
+  confirmar('📋','TAREFA ADICIONADA!',1200);
+}
+function marcarFeita(id) {
+  const tarefas=ls('tarefas')||[];
+  const t=tarefas.find(t=>t.id===id);
+  if(t) t.feita=!t.feita;
+  lsW('tarefas',tarefas);
+  renderAfazer();
+  atualizarPrincipal();
+  if(t&&t.feita) confirmar('✅','TAREFA CONCLUÍDA!',1200);
+}
+function renderAfazer() {
+  const tarefas=ls('tarefas')||[];
+  if(!tarefas.length){
+    $('lista-afazer').innerHTML='<div class="sem-regs">Sem tarefas agendadas.<br>Use o botão + ADICIONAR para criar uma.</div>';
+    return;
+  }
+  $('lista-afazer').innerHTML=tarefas.map(t=>{
+    const passada=t.data&&t.data<new Date().toISOString().slice(0,10)&&!t.feita;
+    const dataFmt=t.data?new Date(t.data+'T12:00').toLocaleDateString('pt-PT',{weekday:'long',day:'numeric',month:'long'}):'Sem data';
+    return `<div class="card-tarefa${t.feita?' concluida':''}">
+      <div class="tarefa-info">
+        <div class="tarefa-data${passada?' passada':''}">${dataFmt}</div>
+        ${t.hora?`<div class="tarefa-hora">⏰ ${t.hora}</div>`:''}
+        <div class="tarefa-desc">${t.desc}</div>
+      </div>
+      ${t.feita
+        ? `<button class="btn-feita-desfazer" onclick="marcarFeita(${t.id})">DESFAZER</button>`
+        : `<button class="btn-feita" onclick="marcarFeita(${t.id})">✓ FEITA</button>`
+      }
+    </div>`;
+  }).join('');
+}
+function abrirAddTarefa() {
+  // pré-preencher data de hoje
+  const hj=new Date().toISOString().slice(0,10);
+  $('tar-data').value=hj;
+  abrirOv('ov-tarefa');
+}
+
+// ── MENU PRINCIPAL — ESTADOS ─────────────────────────────
+function atualizarPrincipal() {
+  // açúcar
+  const ac=ls('acucar_hoje');
+  const elAc=$('est-acucar');
+  if(ac&&ac.d===hoje()){
+    const fora=ac.v<LIM.min||ac.v>LIM.max;
+    elAc.textContent=ac.v+' mg/dL';
+    elAc.className='estado '+(fora?'estado-alerta':'estado-ok');
+  } else {
+    elAc.textContent='SEM REGISTO'; elAc.className='estado estado-alerta';
+  }
+
+  // insulina
+  const ins=ls('insulina_hoje');
+  const elIns=$('est-insulina');
+  if(ins&&ins.d===hoje()){
+    elIns.textContent='✓ '+ins.h; elIns.className='estado estado-roxo';
+  } else {
+    elIns.textContent='NÃO TOMOU'; elIns.className='estado estado-alerta';
+  }
+
+  // medicamentos
+  const meds=ls('medicamentos')||[];
+  const chave='meds_tomas_'+hoje();
+  const tomas=ls(chave)||{};
+  const total=meds.filter(m=>m.freq>0).length;
+  const completos=meds.filter(m=>m.freq>0&&(tomas[m.id]||[]).length>=(m.freq)).length;
+  const elM=$('est-meds');
+  if(!total){
+    elM.textContent='VER LISTA'; elM.className='estado estado-vazio';
+  } else if(completos===total){
+    elM.textContent='✓ TODOS TOMADOS'; elM.className='estado estado-ok';
+  } else {
+    elM.textContent=completos+'/'+total+' TOMADOS';
+    elM.className='estado '+(completos===0?'estado-alerta':'estado-info');
+  }
+
+  // a fazer — preview das 3 próximas pendentes
+  const tarefas=(ls('tarefas')||[]).filter(t=>!t.feita);
+  const proximas=tarefas.slice(0,3);
+  $('badge-afazer').textContent=tarefas.length;
+  $('badge-afazer').style.background=tarefas.length?'var(--verde)':'#AAA';
+  if(!proximas.length){
+    $('preview-afazer').innerHTML='<div class="afazer-vazio">Sem tarefas pendentes</div>';
+  } else {
+    $('preview-afazer').innerHTML=proximas.map(t=>{
+      const dataFmt=t.data?new Date(t.data+'T12:00').toLocaleDateString('pt-PT',{day:'numeric',month:'short'}):'';
+      const horaFmt=t.hora?t.hora:'';
+      const dataHora=[dataFmt,horaFmt].filter(Boolean).join(' ');
+      return `<div class="afazer-item-preview">
+        ${dataHora?`<span class="data-prev">${dataHora}</span>`:''}
+        <span class="desc-prev">${t.desc}</span>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ── INIT ─────────────────────────────────────────────────
+atualizarPrincipal();
+// Popular histórico de insulina com dias anteriores sem registo (só se já houver pelo menos 1 registo)
+(function seedHistInsulina(){
+  const hist=ls('insulina_hist');
+  if(!hist||!hist.length) return; // nada a fazer sem histórico
+  lsW('insulina_hist',hist);
+})();
+</script>
+</body>
+</html>
